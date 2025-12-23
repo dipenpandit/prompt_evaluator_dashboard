@@ -1,7 +1,7 @@
 import streamlit as st
 from src.config import settings 
 import requests
-from src.frontend.ui.add_test_case import add_test_case
+# from src.frontend.ui.test_cases 
 
 def my_prompts():
     # Session state to track selected prompt
@@ -23,4 +23,9 @@ def my_prompts():
             if st.button("Run Evaluation", key=prompt['prompt_id']):
                 st.session_state.selected_prompt = prompt   
                 selected = st.session_state.selected_prompt
+            if st.button("Test Cases", key=f"add_{prompt['prompt_id']}"):
+                st.session_state.selected_prompt = prompt   
+                selected = st.session_state.selected_prompt
+                
+
 

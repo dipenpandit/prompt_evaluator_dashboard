@@ -24,13 +24,12 @@ def post_ques_ans(ques, answer, prompt_id):
     except requests.exceptions.RequestException as e:
         return None
 
-def post_json(json_data, prompt_id):
+def post_json(json_data: list, prompt_id):
     for item in json_data:
         ques = item.get("question")
         answer = item.get("answer")
         if ques and answer:
-            response = post_prompt(ques, answer, prompt_id)
-            return response
+            post_ques_ans(ques, answer, prompt_id)
     
 
 

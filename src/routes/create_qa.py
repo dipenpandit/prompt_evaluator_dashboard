@@ -14,3 +14,8 @@ async def create_ques(qa: TestCaseIn,
     db.commit()
     db.refresh(new_qa)  
     return new_qa
+
+@router.get("/", response_model=list[TestCaseOut], status_code=status.HTTP_200_OK)
+async def get_ques(db: Session = Depends(get_db)) -> list[TestCaseOut]:
+    qas = db.query(TestCase).all()
+    return qas

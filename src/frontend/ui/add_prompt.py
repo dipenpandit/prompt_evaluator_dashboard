@@ -22,7 +22,7 @@ def add_new_prompt():
 
             st.subheader("Add Test Cases (Select one method)")
             json_file = st.file_uploader(
-                "Upload JSON in format [{\"question\": \"...\", \"answer\": \"...\"}, ...]",
+                "Upload JSON in format {\"test_cases\": [{\"question\": \"...\", \"answer\": \"...\"}, ...]}",
                 type=["json"]
             )
 
@@ -46,9 +46,9 @@ def add_new_prompt():
                     
                     if prompt_response and prompt_response.status_code == 201:
                         prompt_id = prompt_response.json().get("prompt_id")
-                        if json_file:
+                        if json_file is not None:
                             try:
-                                json_data = json.load(json_file)
+                                json_data = json.load(json_file).get("test_cases", [])
                                 post_json(json_data, prompt_id)
                             except json.JSONDecodeError:
                                 st.error("Invalid JSON file format.") 
