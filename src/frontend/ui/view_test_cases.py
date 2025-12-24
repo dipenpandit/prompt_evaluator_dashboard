@@ -2,7 +2,7 @@ import streamlit as st
 import requests 
 from src.config import settings
 
-# @st.dialog("View Test Cases")
+# @st.dialog("View Test Cases") 
 def test_case_dialog(prompt_id):
     try: 
         response = requests.get(f"{settings.api_url}/test_cases/{prompt_id}")
