@@ -55,6 +55,6 @@ def add_new_prompt():
                         if question and answer:
                             post_ques_ans(question, answer, prompt_id)
 
-                        st.success("Prompt Project created successfully!")
+                        st.success("Project created successfully!")
                         
                         

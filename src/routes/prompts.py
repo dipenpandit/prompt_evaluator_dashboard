@@ -10,16 +10,25 @@ router = APIRouter(prefix="/prompts", tags=["Create Prompt"])
 
 # POST
 @router.post("/", response_model=PromptOut, status_code=status.HTTP_201_CREATED)
-async def create_prompt(prompt: PromptIn,
-                       db: Session = Depends(get_db)) -> PromptOut:
-    prompt_v0 = PromptVersion(**prompt.model_dump())
-    db.add(prompt_v0)
-    db.commit()
-    db.refresh(prompt_v0)  # refresh to fetch default values properly like the timestamp 
-
-    new_prompt = Prompt(prompt_id=prompt_v0.prompt_id, current_version_id=prompt_v0.version_id)
+async def create_prompt(prompt_data: PromptIn, db: Session = Depends(get_db)):
+    # Create the Parent container first
+    new_prompt = Prompt(prompt_name=prompt_data.prompt_name)
     db.add(new_prompt)
-    db.commit()
+    db.flush() # This generates the new_prompt.prompt_id UUID
+
+    # Create the Version linked to that ID
+    new_version = PromptVersion(
+        prompt_id=new_prompt.prompt_id,
+        prompt_content=prompt_data.prompt_content,
+        version_number=1
+    )
+    db.add(new_version)
+    db.flush() # This generates the new_version.version_id UUID
+
+    # 3. Point the Parent to the New Version
+    new_prompt.current_version_id = new_version.version_id
+    
+    db.commit() # Now everything is saved at once!
     db.refresh(new_prompt)
     return new_prompt
 
@@ -56,3 +65,4 @@ async def get_prompts(db: Session = Depends(get_db)) -> List[DisplayPrompt]:
     return prompts
 
 
+# PUT

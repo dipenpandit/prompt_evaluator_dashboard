@@ -8,27 +8,21 @@ class Base(DeclarativeBase):
     pass
 
 
-class PromptVersion(Base):
-    __tablename__ = "prompt_versions"
-    
-    version_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), 
-                                            primary_key=True, index=True,
-                                            default=uuid4)
-    prompt_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), 
-                                            primary_key=True, index=True,
-                                            default=uuid4)
-    version_number: Mapped[int] = mapped_column(nullable=False, default = 0)
-    prompt_name: Mapped[str] = mapped_column(String, nullable=False)
-    prompt_content: Mapped[str] = mapped_column(String, nullable=False) 
-    status: Mapped[str] = mapped_column(String, nullable=False, default="inactive")
-    created: Mapped[DateTime] = mapped_column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
-
 class Prompt(Base):
     __tablename__ = "prompts"
-    
-    prompt_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), 
-                                            primary_key=True, index=True,)
-    current_version_id: Mapped[UUID] = mapped_column(ForeignKey("prompt_versions.version_id"), nullable=False)
+
+    prompt_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    prompt_name: Mapped[str] = mapped_column(String, nullable=False)
+    current_version_id: Mapped[UUID] = mapped_column(ForeignKey("prompt_versions.version_id"), nullable=True)
+
+class PromptVersion(Base):
+    __tablename__ = "prompt_versions"
+
+    version_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    prompt_id: Mapped[UUID] = mapped_column(ForeignKey("prompts.prompt_id"), nullable=False)
+    version_number: Mapped[int] = mapped_column(default=1)
+    prompt_content: Mapped[str] = mapped_column(String, nullable=False)
+    created: Mapped[datetime.datetime] = mapped_column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class TestCase(Base):
     __tablename__ = "test_cases"

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from src.schemas import TestCaseIn, TestCaseOut
+from src.schemas import TestCaseIn, TestCaseOut, UpdatePromptIn
 from sqlalchemy.orm import Session
 from src.db.database import get_db
 from src.db.models import TestCase
@@ -19,3 +19,4 @@ async def create_ques(qa: TestCaseIn,
 async def get_ques(db: Session = Depends(get_db)) -> list[TestCaseOut]:
     qas = db.query(TestCase).all()
     return qas
+

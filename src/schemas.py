@@ -6,8 +6,12 @@ class PromptIn(BaseModel):
     prompt_name: str
     prompt_content: str
 
+class UpdatePromptIn(BaseModel):
+    prompt_content: str    
+
 class PromptOut(BaseModel):
     prompt_id: UUID
+    prompt_name: str
     current_version_id: UUID
 
     model_config = ConfigDict(from_attributes=True)

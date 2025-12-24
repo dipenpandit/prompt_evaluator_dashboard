@@ -2,7 +2,7 @@ import streamlit as st
 import requests 
 from src.config import settings
 
-@st.dialog("View Test Cases")
+# @st.dialog("View Test Cases")
 def test_case_dialog():
     try: 
         response = requests.get(f"{settings.api_url}/ques_ans/")
@@ -11,8 +11,8 @@ def test_case_dialog():
             return
         test_cases = response.json()
         for tc in test_cases:
-            st.markdown(f"**Q:** {tc['question']}")
-            st.markdown(f"**A:** {tc['answer']}")
+            st.markdown(f"**Ques:** {tc['question']}")
+            st.markdown(f"**Ans:** {tc['answer']}")
     except Exception as e:
         st.error(f"Error fetching test cases: {e}")
 
