@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     db: str
     db_host: str 
     db_user: str 
+    db_port: str = "5432"
     db_password: str 
     api_url: str = "http://localhost:8000"  
     openrouter_api_key: str
@@ -16,4 +17,9 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8"
     )
 
+    @property
+    def sql_alchemy_database_url(self) -> str:
+        return f"postgresql+psycopg2://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db}"
+
 settings = Settings()
+

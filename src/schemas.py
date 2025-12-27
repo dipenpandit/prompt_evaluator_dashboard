@@ -11,12 +11,6 @@ class PromptIn(BaseModel):
 class EditPromptIn(BaseModel):
     """Schema for editing an existing prompt."""
     prompt_content: str   
-    status: str = "inactive"
-
-class FixPromptIn(BaseModel):
-    """Schema for fixing a prompt after llm evaluation."""
-    prompt_content: str 
-    status: str = "active"
 
 class EvalCaseIn(BaseModel):
     """Schema for an evaluation test case input."""
@@ -24,9 +18,10 @@ class EvalCaseIn(BaseModel):
     correct_answer: str
 
 class EvalOut(BaseModel):
-    """Sch"""
-    prompt_id: UUID = Field(description="ID of the prompt evaluated.")
+    """Schema for the evaluation api output."""
     prompt_content: str = Field(description="Old or fixed prompt after evaluation result.")
+    quality: Literal["pass", "fail"] = Field(description="Overall quality evaluation result.")
+    reason: str = Field(description="Explanation for the evaluation decision.")
 
 class PromptOut(BaseModel):
     prompt_id: UUID
@@ -36,7 +31,9 @@ class PromptOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class DisplayPrompt(BaseModel):
+    """Schema for displaying prompt with its current version details."""
     prompt_id: UUID
+    current_version_id: UUID
     version_number: int
     prompt_name: str
     prompt_content: str

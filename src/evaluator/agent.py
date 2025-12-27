@@ -281,9 +281,9 @@ class EvaluatorAgent:
       
 agent = EvaluatorAgent()
 
-# ------ TESTING AGENT -----
-resp=agent.evaluate(prompt_content="Provide a good response to the query based on the context.",
-               query="How can I book a hotel room?",
-               rag_ans="You need to call the hotel directly to make a reservation. Online booking is not available.",
-               correct_answer="You can book a hotel room through our website by selecting your destination, dates, and preferred room type, then completing the payment process. ",
-               context="Our booking platform allows users to search for hotels by destination and dates. The system displays available rooms with pricing, amenities, and photos. Users can filter results by price, rating, and facilities. Once a room is selected, guests enter their details and payment information to complete the reservation. The entire process is secure and typically takes 5-10 minutes.")
+# # ------ TESTING AGENT -----
+# resp=agent.evaluate(prompt_content="Provide a good response to the query based on the context.",
+#                query="How can I book a hotel room?",
+#                rag_ans="You need to call the hotel directly to make a reservation. Online booking is not available.",
+#                correct_answer="You can book a hotel room through our website by selecting your destination, dates, and preferred room type, then completing the payment process. ",
+#                context="Our booking platform allows users to search for hotels by destination and dates. The system displays available rooms with pricing, amenities, and photos. Users can filter results by price, rating, and facilities. Once a room is selected, guests enter their details and payment information to complete the reservation. The entire process is secure and typically takes 5-10 minutes.")
