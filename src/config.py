@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     @property
     def sql_alchemy_database_url(self) -> str:
-        return f"postgresql+psycopg2://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db}"
+        return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db}"
 
 settings = Settings()
 
