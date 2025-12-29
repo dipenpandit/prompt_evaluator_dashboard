@@ -1,10 +1,12 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from src.db.database import get_db
 from sqlalchemy.orm import Session
-from src.schemas import EvalOut, EvalCaseIn
+from src.schemas import TestCaseIn, TestResultIn, TestResultOut, EditPromptIn
 from src.db.models import Prompt, PromptVersion
 from src.config import settings
 from src.evaluator.agent import EvaluatorAgent, agent
+from src.services.update_prompt import update_prompt_version, set_prompt_active
+from src.services.add_test_case import add_test_case, add_result
 import requests 
 import re
 import json
@@ -12,9 +14,9 @@ import json
 router = APIRouter(prefix="/eval", tags=["Evaluation"])
 
 # POST
-@router.post("/{prompt_id}", response_model=EvalOut, status_code=status.HTTP_200_OK)
+@router.post("/{prompt_id}", response_model=TestResultOut, status_code=status.HTTP_200_OK)
 async def make_evaluation(prompt_id: str,
-                          query: EvalCaseIn, 
+                          query: TestCaseIn, 
                           db: Session = Depends(get_db),
                           agent: EvaluatorAgent = Depends(lambda: agent)): 
     """Evaluate the prompt based on the retrieved answer and context from RAG and update the prompt content if necessary (quality: bad)
@@ -31,8 +33,11 @@ async def make_evaluation(prompt_id: str,
     current_version = db.get(PromptVersion, prompt.current_version_id) 
     prompt_content = current_version.prompt_content
 
+    # Add Test Case to the db for this prompt_id 
+    test_case = add_test_case(query, prompt.prompt_id, db) 
+
     # Call RAG API
-    rag_response = requests.post(f"{settings.rag_api}", json={"query": query.query})
+    rag_response = requests.post(f"{settings.rag_api}", json={"query": query.question})
     
     if rag_response.status_code != 200:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="RAG API error, check your api url and server status")
@@ -42,12 +47,12 @@ async def make_evaluation(prompt_id: str,
     # Context for agent to evaluate prompt
     rag_ans = rag_data.get("answer", "")
     rag_context = rag_data.get("context", "")
-    correct_answer = query.correct_answer
+    correct_answer = query.answer
 
     # Pass prompt_content, query, rag_ans, correct_answer, context to agent
     agent_result = agent.evaluate(
         prompt_content=prompt_content,
-        query=query.query,
+        query=query.question,
         rag_ans=rag_ans,
         correct_answer=correct_answer,
         context=rag_context
@@ -63,32 +68,32 @@ async def make_evaluation(prompt_id: str,
         agent_json = json.loads(json_str) # convert to dictionary
 
 
-    # Add the updated prompt to the databse with status active and set the current version in prompts table to the new version
+    # FAIL CASE: Add the updated prompt to the databse with status active and set the current version in prompts table to the new version
     if agent_json.get("quality") == "fail":
-       new_prompt_content = agent_json.get("prompt_content")
-       new_version_number = current_version.version_number + 1
-       new_version = PromptVersion(
-           prompt_id=prompt_id,
-           prompt_content=new_prompt_content,
-           version_number=new_version_number,
-           status="active"
-        )
-       db.add(new_version)
-       db.flush()  # Generate the new_version.version_id UUID
+       new_prompt_content = EditPromptIn(prompt_content=agent_json.get("prompt_content"))
+       # 1. Creates a new prompt version and updates the prompt_id to point to it
+       update_prompt_version(prompt, new_prompt_content, db)
+       
+       # 2. Set the new version (latest version) to active
+       updated_prompt_details = set_prompt_active(prompt, db)
 
-       # Update the current version in prompts table
-       prompt.current_version_id = new_version.version_id
-       db.commit()
-       db.refresh(prompt)
-
-    # Set the status flag to active in prompt_versions table for the passed prompt
+    # PASS CASE: Set the status flag to active in prompt_versions table for the passed prompt
     elif agent_json.get("quality") == "pass":
-        current_version.status = "active"
-        db.commit()
-        db.refresh(current_version)
+        updated_prompt_details = set_prompt_active(prompt, db)
 
-    return EvalOut(
-        prompt_content = agent_json.get("prompt_content", ""),
-        quality = agent_json.get("quality", ""),
-        reason= agent_json.get("reason", ""),
+    # Save the test result with reason
+    test_result = add_result(TestResultIn(
+        test_id=test_case.test_id,
+        prompt_version_id=prompt.current_version_id,
+        result=agent_json.get("quality"),
+        reason=agent_json.get("reason")
+        ), db)
+
+    return TestResultOut(
+        result_id=test_result.result_id,
+        test_id=test_result.test_id,
+        prompt_version_id=test_result.prompt_version_id,
+        result=test_result.result,
+        reason=test_result.reason,
+        new_prompt_content=agent_json.get("prompt_content") if agent_json.get("quality") == "fail" else None
     )
