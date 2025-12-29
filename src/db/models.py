@@ -1,12 +1,11 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship 
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column 
 from sqlalchemy import ForeignKey, String, UUID, DateTime
-from typing import List, Optional 
+from typing import Optional 
 import datetime
 from uuid import uuid4
 
 class Base(DeclarativeBase):
     pass
-
 
 class Prompt(Base):
     __tablename__ = "prompts"

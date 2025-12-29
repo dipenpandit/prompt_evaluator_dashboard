@@ -1,8 +1,9 @@
-from fastapi import Depends, status, HTTPException
-from src.schemas import PromptIn, PromptOut, DisplayPrompt, EditPromptIn
+from fastapi import Depends, HTTPException
+from src.schemas import DisplayPrompt, EditPromptIn, DisplayVersion
 from src.db.database import get_db
 from sqlalchemy.orm import Session
 from src.db.models import Prompt, PromptVersion
+from uuid import UUID
 
 # Manual Edit or LLM Generated prompt update service
 def update_prompt_version(prompt: Prompt,
@@ -16,6 +17,8 @@ def update_prompt_version(prompt: Prompt,
     
     # Create new version
     latest_version = db.get(PromptVersion, prompt.current_version_id)
+    if not latest_version:
+        raise HTTPException(status_code=404, detail="Prompt version not found")
     new_version_number = latest_version.version_number + 1
 
 
@@ -43,19 +46,21 @@ def update_prompt_version(prompt: Prompt,
 
 
 # Set prompt version to active service
-def set_prompt_active(prompt: Prompt,
+def set_prompt_active(version_id: UUID,
                       db: Session = Depends(get_db)):
     """Set the current version of the prompt to active status."""
-    current_version = db.get(PromptVersion, prompt.current_version_id)
-    if current_version.status != "active":
-        current_version.status = "active"
+    version = db.get(PromptVersion, version_id)
+    if version.status != "active":
+        version.status = "active"
         db.commit()
-    return DisplayPrompt(
-        prompt_id=prompt.prompt_id,
-        prompt_name=prompt.prompt_name,
-        current_version_id=prompt.current_version_id,
-        prompt_content=current_version.prompt_content,
-        version_number=current_version.version_number,
-        status=current_version.status
+    return DisplayVersion(
+        version_id=version.version_id,
+        prompt_id=version.prompt_id,
+        prompt_content=version.prompt_content,
+        version_number=version.version_number,
+        status=version.status,
+        created_at=version.created_at
     )
+
+
 

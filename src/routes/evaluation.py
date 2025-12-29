@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from src.db.database import get_db
 from sqlalchemy.orm import Session
-from src.schemas import TestCaseIn, TestResultIn, TestResultOut, EditPromptIn
+from src.schemas import TestCaseIn, TestResultIn, EvaluationAPIOut, EditPromptIn
 from src.db.models import Prompt, PromptVersion
 from src.config import settings
 from src.evaluator.agent import EvaluatorAgent, agent
@@ -14,7 +14,7 @@ import json
 router = APIRouter(prefix="/eval", tags=["Evaluation"])
 
 # POST
-@router.post("/{prompt_id}", response_model=TestResultOut, status_code=status.HTTP_200_OK)
+@router.post("/{prompt_id}", response_model=EvaluationAPIOut, status_code=status.HTTP_200_OK)
 async def make_evaluation(prompt_id: str,
                           query: TestCaseIn, 
                           db: Session = Depends(get_db),
@@ -89,7 +89,7 @@ async def make_evaluation(prompt_id: str,
         reason=agent_json.get("reason")
         ), db)
 
-    return TestResultOut(
+    return EvaluationAPIOut(
         result_id=test_result.result_id,
         test_id=test_result.test_id,
         prompt_version_id=test_result.prompt_version_id,
@@ -97,3 +97,5 @@ async def make_evaluation(prompt_id: str,
         reason=test_result.reason,
         new_prompt_content=agent_json.get("prompt_content") if agent_json.get("quality") == "fail" else None
     )
+
+

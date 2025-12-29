@@ -29,10 +29,23 @@ class DisplayPrompt(BaseModel):
     prompt_content: str = Field(description="The content of the prompt.")
     status: str = Field(description="The status of the prompt version.")
 
+class DisplayVersion(BaseModel):
+    """Schema for displaying a specific prompt version."""
+    version_id: UUID = Field(description="The unique identifier of the prompt version.")
+    prompt_id: UUID = Field(description="The unique identifier of the prompt.")
+    version_number: int = Field(description="The version number of the prompt.")
+    prompt_content: str = Field(description="The content of the prompt.")
+    status: str = Field(description="The status of the prompt version.")
+    created: datetime = Field(description="The creation timestamp of the prompt version.")
+
+    model_config = ConfigDict(from_attributes=True)
+
 class TestCaseIn(BaseModel):
     """Test case input schema."""
     question: str = Field(description="The question for the test case.")
     answer: str = Field(description="The expected answer for the test case.")
+
+    model_config = ConfigDict(from_attributes=True)
 
 class TestCaseOut(BaseModel):
     """Test Case output schema."""
@@ -53,19 +66,30 @@ class TestResultIn(BaseModel):
     reason: str = Field(description="Explanation for the test result.")
 
 class TestResultOut(BaseModel):
-    """Test Result output schema."""
+    """Final test result after saving it."""
     result_id: UUID = Field(description="The test case being evaluated.")
     test_id: UUID = Field(description="The test case being evaluated.")
     prompt_version_id: UUID = Field(description="The version of the prompt being tested.")
     result: str = Field(description="Result of the test case evaluation.")
     reason: str = Field(description="Explanation for the test result.")
-    new_prompt_content: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class EvaluationAPIOut(BaseModel):
+    """Final test result from evaluation endpoint."""
+    result_id: UUID = Field(description="The test case being evaluated.")
+    test_id: UUID = Field(description="The test case being evaluated.")
+    prompt_version_id: UUID = Field(description="The version of the prompt being tested.")
+    result: str = Field(description="Result of the test case evaluation.")
+    reason: str = Field(description="Explanation for the test result.")
+    new_prompt_content: Optional[str]   # only for failed test cases where prompt was updated
 
     model_config = ConfigDict(from_attributes=True)
 
 class DisplayTestResult(BaseModel):
-    """Schema for displaying test result with test case details."""
+    """Schema for displaying test result for a particular version."""
     test_id: UUID = Field(description="The unique identifier of the test case.")
+    prompt_version_id: UUID = Field(description="The version of the prompt being tested.")
     question: str = Field(description="The question for the test case.")
     answer: str = Field(description="The expected answer for the test case.")
     result: str = Field(description="Result of the test case evaluation.")
