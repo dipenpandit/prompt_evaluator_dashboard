@@ -6,12 +6,13 @@ from sqlalchemy import select
 from src.db.models import Prompt, PromptVersion
 from typing import List
 from src.services.update_prompt import set_prompt_active
+from uuid import UUID
 
 router = APIRouter(prefix="/versions", tags=["Prompt Versions"])
 
 # GET - /versions/{prompt_id}
 @router.get("/{prompt_id}", response_model=List[DisplayVersion], status_code=status.HTTP_200_OK)
-async def get_prompt_versions(prompt_id: str, db: Session = Depends(get_db)) -> List[DisplayVersion]:
+async def get_prompt_versions(prompt_id: UUID, db: Session = Depends(get_db)) -> List[DisplayVersion]:
     """Retrieve all versions of a specific prompt by its id."""
     prompt = db.get(Prompt, prompt_id)
     if not prompt:
@@ -32,7 +33,7 @@ async def get_prompt_versions(prompt_id: str, db: Session = Depends(get_db)) -> 
 
 # GET - /versions/version/{version_id}
 @router.get("/version/{version_id}", response_model=DisplayVersion, status_code=status.HTTP_200_OK)
-async def get_prompt_version_by_id(version_id: str, db: Session = Depends(get_db)) -> DisplayVersion:
+async def get_prompt_version_by_id(version_id: UUID, db: Session = Depends(get_db)) -> DisplayVersion:
     """Retrieve a specific prompt version by its version id."""
     version = db.get(PromptVersion, version_id)
     if not version:
@@ -42,7 +43,7 @@ async def get_prompt_version_by_id(version_id: str, db: Session = Depends(get_db
 
 # PATCH - /versions/{version_id}/activate
 @router.patch("/{version_id}/activate", response_model=DisplayVersion, status_code=status.HTTP_200_OK)
-async def activate_prompt_version(version_id: str,
+async def activate_prompt_version(version_id: UUID,
                                   db: Session = Depends(get_db)) -> DisplayVersion:
     """Set a specific prompt version as the active version for its parent prompt."""
     updated_version = set_prompt_active(version_id, db)

@@ -4,6 +4,7 @@ from src.db.database import get_db
 from sqlalchemy.orm import Session
 from src.db.models import Prompt, PromptVersion
 from typing import List
+from uuid import UUID
 from src.services.display_prompt import display_all_prompts, display_prompt
 from src.services.update_prompt import update_prompt_version, set_prompt_active
 
@@ -48,7 +49,7 @@ async def get_prompts(db: Session = Depends(get_db)) -> List[DisplayPrompt]:
 
 # GET - /prompts/{prompt_id}
 @router.get("/{prompt_id}", response_model=DisplayPrompt, status_code=status.HTTP_200_OK)
-async def get_prompt_by_id(prompt_id: str, db: Session = Depends(get_db)) -> DisplayPrompt:
+async def get_prompt_by_id(prompt_id: UUID, db: Session = Depends(get_db)) -> DisplayPrompt:
     """Retrieve a specific prompt by its ID along with its current version details."""
     prompt = db.get(Prompt, prompt_id)
     if not prompt:
@@ -57,7 +58,7 @@ async def get_prompt_by_id(prompt_id: str, db: Session = Depends(get_db)) -> Dis
 
 # PUT - /prompts/{prompt_id}
 @router.put("/{prompt_id}", response_model=DisplayPrompt, status_code=status.HTTP_201_CREATED)
-async def update_prompt(prompt_id: str, 
+async def update_prompt(prompt_id: UUID, 
                         prompt_data: EditPromptIn,
                         db: Session = Depends(get_db)) -> DisplayPrompt:
  
