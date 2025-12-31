@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     db_user: str 
     db_port: str = "5432"
     db_password: str 
-    api_url: str = "http://localhost:8000"  
-    openrouter_api_key: str
-    openrouter_url: str
-    llm: str = "gpt-4o-mini" 
+    api_url: str = "http://localhost:8000"
+    api_key: str
+    base_url: str
+    llm: str 
     rag_api: str = "http://localhost:8001/rag"
 
     model_config = SettingsConfigDict(

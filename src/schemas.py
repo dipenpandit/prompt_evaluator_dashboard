@@ -101,7 +101,7 @@ class EvaluationLLMOut(BaseModel):
     faithfulness: float = Field(description="Score how strictly the RAG Answer is grounded in the Provided Context.")
     context_relevancy: float = Field(description="Score how useful and relevant the Provided Context is for answering the User Query.")
     answer_relevancy: float = Field(description=" Score how well the RAG Answer addresses the User Query compared to the Correct Answer.")
-    reason: str
+    reason: str = Field(description="Explanation for why a particular score was given.")
 
 class EvaluateToolInput(BaseModel):
     """Input for the evaluate_prompt tool."""
@@ -111,31 +111,8 @@ class EvaluateToolInput(BaseModel):
     correct_answer: str = Field(description="The expected or gold-standard answer.")
     context: str = Field(description="The retrieved or supporting context provided to the RAG system.")
 
-class UpdateToolInput(BaseModel):
-    """Input for the update tool."""
-    # Context for the tool
-    prompt_content: str = Field(description="The instruction or prompt used to generate the RAG answer.")
-    query: str = Field(description="The original user question.")
-    rag_ans: str = Field(description="The answer produced by the RAG system.")
-    correct_answer: str = Field(description="The expected or gold-standard answer.")
-    context: str = Field(description="The retrieved or supporting context provided to the RAG system.")
-
-    # Metrics from the evaluation
-    faithfulness: float = Field(description="Faithfulness score from evaluation.")
-    context_relevancy: float = Field(description="Context Relevancy score from evaluation.")
-    answer_relevancy: float = Field(description="Answer Relevancy score from evaluation.")
-
-    # Output from the evaluation  
-    quality: Literal["pass", "fail"] = Field(description="Overall quality evaluation result.")
-    reason: str = Field(description="Explanation for the evaluation decision.")
-
-class UpdateLLMOut(BaseModel):
-    """Response from the update_prompt tool."""
-    updated_prompt: str = Field(description="The refined prompt content after applying updates.")
-
 class AgentResponse(BaseModel):
     """Response from the EvaluatorAgent."""
     quality: Literal["pass", "fail"] = Field(description="Overall quality evaluation result.")
-    prompt_content: str = Field(description="The updated prompt content if quality is 'fail', else existing prompt.")
     reason: str = Field(description="Explanation for the evaluation decision.")
 
